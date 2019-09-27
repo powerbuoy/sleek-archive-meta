@@ -1,0 +1,16 @@
+{
+    "name": "powerbuoy/sleek-archive-meta",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Andreas Lagerkvist",
+            "email": "powerbuoy@gmail.com"
+        }
+    ],
+    "autoload": {
+        "files": ["sleek-archive-meta.php"]
+    },
+    "require": {
+        "powerbuoy/sleek-utils": "dev-master"
+    }
+}
