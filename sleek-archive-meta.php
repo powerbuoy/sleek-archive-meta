@@ -96,11 +96,11 @@ add_filter('get_the_archive_description', function ($description) {
 
 ###############
 # Archive Image
-function the_archive_image ($size) {
+function the_archive_image ($size = 'large') {
 	echo get_the_archive_image($size);
 }
 
-function the_archive_image_url ($size) {
+function the_archive_image_url ($size = 'large') {
 	echo get_the_archive_image_url($size);
 }
 
@@ -137,8 +137,8 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 		}
 	}
 
-	# Custom taxonomy (TODO: Should use Sleek\Utils\get_current_post_type())
-	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', get_post_type() . '_archive_meta')) {
+	# Custom taxonomy
+	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_meta')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -169,4 +169,59 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	return $image;
 }
 
-# TODO: Add {postType}_archive_meta options pages with archive_title, archive_description and archive_image fields
+###########################################
+# Add {postType}_archive_meta options pages
+# with title, description and image fields
+add_action('init', function () {
+	if (!function_exists('acf_add_options_page')) {
+		return;
+	}
+
+	# Grab all public custom post types
+	$postTypes = get_post_types(['public' => true, '_builtin' => false], 'objects');
+
+	foreach ($postTypes as $postType) {
+		# Create the options page
+		acf_add_options_page([
+			'page_title' => __('Archive Settings', 'sleek'),
+			'menu_slug' => $postType->name . '_archive_meta',
+			'parent_slug' => 'edit.php?post_type=' . $postType->name,
+			'icon_url' => 'dashicons-welcome-write-blog',
+			'post_id' => $postType->name . '_archive_meta'
+		]);
+
+		# Add some standard fields (title, description, image)
+		$groupKey = 'group_' . $postType->name . '_sleek_archive_meta';
+
+		acf_add_local_field_group([
+			'key' => $groupKey,
+			'title' => __('Archive Settings', 'sleek'),
+			'fields' => [
+				[
+					'label' => __('Title', 'sleek'),
+					'key' => 'field_' . $groupKey . '_title',
+					'name' => 'title',
+					'type' => 'text'
+				],
+				[
+					'label' => __('Image', 'sleek'),
+					'key' => 'field_' . $groupKey . '_image',
+					'name' => 'image',
+					'type' => 'image',
+					'return_format' => 'id'
+				],
+				[
+					'label' => __('Description', 'sleek'),
+					'key' => 'field_' . $groupKey . '_description',
+					'name' => 'description',
+					'type' => 'wysiwyg'
+				]
+			],
+			'location' => [[[
+				'param' => 'options_page',
+				'operator' => '==',
+				'value' => $postType->name . '_archive_meta'
+			]]]
+		]);
+	}
+}, 99);
