@@ -11,6 +11,7 @@
         "files": ["sleek-archive-meta.php"]
     },
     "require": {
+        "powerbuoy/sleek-acf": "dev-master",
         "powerbuoy/sleek-utils": "dev-master"
     }
 }

@@ -193,31 +193,29 @@ if (get_theme_support('sleek-archive-meta')) {
 
 			# Add some standard fields (title, description, image)
 			$groupKey = 'group_' . $postType->name . '_sleek_archive_meta';
+			$fields = \Sleek\Acf\generate_keys(apply_filters('sleek_archive_meta_fields', [
+				[
+					'label' => __('Title', 'sleek'),
+					'name' => 'title',
+					'type' => 'text'
+				],
+				[
+					'label' => __('Image', 'sleek'),
+					'name' => 'image',
+					'type' => 'image',
+					'return_format' => 'id'
+				],
+				[
+					'label' => __('Description', 'sleek'),
+					'name' => 'description',
+					'type' => 'wysiwyg'
+				]
+			]), 'field_' . $groupKey);
 
 			acf_add_local_field_group([
 				'key' => $groupKey,
 				'title' => __('Archive Settings', 'sleek'),
-				'fields' => [
-					[
-						'label' => __('Title', 'sleek'),
-						'key' => 'field_' . $groupKey . '_title',
-						'name' => 'title',
-						'type' => 'text'
-					],
-					[
-						'label' => __('Image', 'sleek'),
-						'key' => 'field_' . $groupKey . '_image',
-						'name' => 'image',
-						'type' => 'image',
-						'return_format' => 'id'
-					],
-					[
-						'label' => __('Description', 'sleek'),
-						'key' => 'field_' . $groupKey . '_description',
-						'name' => 'description',
-						'type' => 'wysiwyg'
-					]
-				],
+				'fields' => $fields,
 				'location' => [[[
 					'param' => 'options_page',
 					'operator' => '==',
