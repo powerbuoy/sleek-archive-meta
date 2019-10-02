@@ -193,7 +193,7 @@ add_action('after_setup_theme', function () {
 				]);
 
 				# Add some standard fields (title, description, image)
-				$groupKey = 'group_' . $postType->name . '_sleek_archive_meta';
+				$groupKey = $postType->name . '_archive_meta';
 				$fields = \Sleek\Acf\generate_keys(apply_filters('sleek_archive_meta_fields', [
 					[
 						'label' => __('Title', 'sleek'),
@@ -211,7 +211,7 @@ add_action('after_setup_theme', function () {
 						'name' => 'description',
 						'type' => 'wysiwyg'
 					]
-				]), 'field_' . $groupKey);
+				]), $groupKey);
 
 				acf_add_local_field_group([
 					'key' => $groupKey,
