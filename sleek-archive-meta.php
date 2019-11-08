@@ -32,7 +32,7 @@ add_filter('get_the_archive_title', function ($title) {
 	}
 
 	# CPT archive should show custom title if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = \get_field('title', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = get_field('title', $wp_query->query['post_type'] . '_archive_meta')) {
 		$title = $customTitle;
 	}
 
@@ -82,7 +82,7 @@ add_filter('get_the_archive_description', function ($description) {
 	}
 
 	# CPT archive should show custom description if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = \get_field('description', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_archive_meta')) {
 		$description = $customDescription;
 	}
 
@@ -128,7 +128,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	}
 
 	# CPT archive
-	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = \get_field('image', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_archive_meta')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -138,7 +138,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	}
 
 	# Custom taxonomy
-	elseif (is_tax() and function_exists('get_field') and $imageId = \get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_meta')) {
+	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_meta')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
