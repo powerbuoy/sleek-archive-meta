@@ -183,6 +183,11 @@ add_action('after_setup_theme', function () {
 			$postTypes = get_post_types(['public' => true, '_builtin' => false], 'objects');
 
 			foreach ($postTypes as $postType) {
+				# Ignore post-types with no archives
+				if (isset($postType->has_archive) and $postType->has_archive === false) {
+					continue;
+				}
+
 				# Create the options page
 				acf_add_options_page([
 					'page_title' => __('Archive Settings', 'sleek'),
