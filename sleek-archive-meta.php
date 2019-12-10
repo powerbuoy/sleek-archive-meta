@@ -172,6 +172,49 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 ###########################################
 # Add {postType}_archive_meta options pages
 # with title, description and image fields
+function add_archive_meta_page ($name) {
+	# Create the options page
+	acf_add_options_page([
+		'page_title' => __('Archive Settings', 'sleek'),
+		'menu_slug' => $name . '_archive_meta',
+		'parent_slug' => 'edit.php?post_type=' . $name,
+		'icon_url' => 'dashicons-welcome-write-blog',
+		'post_id' => $name . '_archive_meta'
+	]);
+
+	# Add some standard fields (title, description, image)
+	$groupKey = $name . '_archive_meta';
+	$fields = \Sleek\Acf\generate_keys([
+		[
+			'label' => __('Title', 'sleek'),
+			'name' => 'title',
+			'type' => 'text'
+		],
+		[
+			'label' => __('Image', 'sleek'),
+			'name' => 'image',
+			'type' => 'image',
+			'return_format' => 'id'
+		],
+		[
+			'label' => __('Description', 'sleek'),
+			'name' => 'description',
+			'type' => 'wysiwyg'
+		]
+	], $groupKey);
+
+	acf_add_local_field_group([
+		'key' => $groupKey,
+		'title' => __('Archive Settings', 'sleek'),
+		'fields' => $fields,
+		'location' => [[[
+			'param' => 'options_page',
+			'operator' => '==',
+			'value' => $name . '_archive_meta'
+		]]]
+	]);
+}
+
 add_action('after_setup_theme', function () {
 	if (get_theme_support('sleek-archive-meta')) {
 		add_action('init', function () {
@@ -184,50 +227,9 @@ add_action('after_setup_theme', function () {
 
 			foreach ($postTypes as $postType) {
 				# Ignore post-types with no archives
-				if (isset($postType->has_archive) and $postType->has_archive === false) {
-					continue;
+				if (!(isset($postType->has_archive) and $postType->has_archive === false)) {
+					add_archive_meta_page($postType->name);
 				}
-
-				# Create the options page
-				acf_add_options_page([
-					'page_title' => __('Archive Settings', 'sleek'),
-					'menu_slug' => $postType->name . '_archive_meta',
-					'parent_slug' => 'edit.php?post_type=' . $postType->name,
-					'icon_url' => 'dashicons-welcome-write-blog',
-					'post_id' => $postType->name . '_archive_meta'
-				]);
-
-				# Add some standard fields (title, description, image)
-				$groupKey = $postType->name . '_archive_meta';
-				$fields = \Sleek\Acf\generate_keys([
-					[
-						'label' => __('Title', 'sleek'),
-						'name' => 'title',
-						'type' => 'text'
-					],
-					[
-						'label' => __('Image', 'sleek'),
-						'name' => 'image',
-						'type' => 'image',
-						'return_format' => 'id'
-					],
-					[
-						'label' => __('Description', 'sleek'),
-						'name' => 'description',
-						'type' => 'wysiwyg'
-					]
-				], $groupKey);
-
-				acf_add_local_field_group([
-					'key' => $groupKey,
-					'title' => __('Archive Settings', 'sleek'),
-					'fields' => $fields,
-					'location' => [[[
-						'param' => 'options_page',
-						'operator' => '==',
-						'value' => $postType->name . '_archive_meta'
-					]]]
-				]);
 			}
 		}, 99);
 	}
