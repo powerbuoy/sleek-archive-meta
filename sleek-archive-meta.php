@@ -8,8 +8,8 @@ add_filter('get_the_archive_title', function ($title) {
 	global $post;
 
 	# Blog page should show blog page's the_title()
-	if (is_home() and get_option('page_for_posts')) {
-		$title = get_the_title(get_option('page_for_posts'));
+	if (is_home() and function_exists('get_field') and $customTitle = get_field('title', 'post_archive_settings')) {
+		$title = $customTitle;
 	}
 
 	# Search should show something nice too
@@ -32,7 +32,7 @@ add_filter('get_the_archive_title', function ($title) {
 	}
 
 	# CPT archive should show custom title if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = get_field('title', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = get_field('title', $wp_query->query['post_type'] . '_archive_settings')) {
 		$title = $customTitle;
 	}
 
@@ -51,8 +51,8 @@ add_filter('get_the_archive_description', function ($description) {
 	global $post;
 
 	# Blog page should show blog page's the_content()
-	if (is_home() and get_option('page_for_posts')) {
-		$description = apply_filters('the_content', get_post_field('post_content', get_option('page_for_posts')));
+	if (is_home() and function_exists('get_field') and $customDescription = get_field('description', 'post_archive_settings')) {
+		$description = $customDescription;
 	}
 
 	# Search should show something nice too
@@ -82,7 +82,7 @@ add_filter('get_the_archive_description', function ($description) {
 	}
 
 	# CPT archive should show custom description if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_archive_settings')) {
 		$description = $customDescription;
 	}
 
@@ -116,19 +116,17 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	$image = false;
 
 	# Blog pages (category, date, tag etc)
-	if ((is_home() or is_category() or is_tag() or is_date()) and get_option('page_for_posts')) {
-		if (has_post_thumbnail(get_option('page_for_posts'))) {
-			if ($urlOnly) {
-				$image = get_the_post_thumbnail_url(get_option('page_for_posts'), $size);
-			}
-			else {
-				$image = get_the_post_thumbnail(get_option('page_for_posts'), $size);
-			}
+	if ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_archive_settings')) {
+		if ($urlOnly) {
+			$image = wp_get_attachment_image_src($imageId, $size)[0];
+		}
+		else {
+			$image = wp_get_attachment_image($imageId, $size);
 		}
 	}
 
 	# CPT archive
-	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_archive_meta')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_archive_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -138,7 +136,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	}
 
 	# Custom taxonomy
-	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_meta')) {
+	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -170,20 +168,20 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 }
 
 ###########################################
-# Add {postType}_archive_meta options pages
+# Add {postType}_archive_settings options pages
 # with title, description and image fields
-function add_archive_meta_page ($name) {
+function add_archive_settings_page ($name) {
 	# Create the options page
 	acf_add_options_page([
 		'page_title' => __('Archive Settings', 'sleek'),
-		'menu_slug' => $name . '_archive_meta',
-		'parent_slug' => 'edit.php?post_type=' . $name,
+		'menu_slug' => $name . '_archive_settings',
+		'parent_slug' => $name === 'post' ? 'edit.php' : 'edit.php?post_type=' . $name,
 		'icon_url' => 'dashicons-welcome-write-blog',
-		'post_id' => $name . '_archive_meta'
+		'post_id' => $name . '_archive_settings'
 	]);
 
 	# Add some standard fields (title, description, image)
-	$groupKey = $name . '_archive_meta';
+	$groupKey = $name . '_archive_settings';
 	$fields = \Sleek\Acf\generate_keys([
 		[
 			'label' => __('Title', 'sleek'),
@@ -210,7 +208,7 @@ function add_archive_meta_page ($name) {
 		'location' => [[[
 			'param' => 'options_page',
 			'operator' => '==',
-			'value' => $name . '_archive_meta'
+			'value' => $name . '_archive_settings'
 		]]]
 	]);
 }
@@ -222,13 +220,13 @@ add_action('after_setup_theme', function () {
 				return;
 			}
 
-			# Grab all public custom post types
-			$postTypes = get_post_types(['public' => true, '_builtin' => false], 'objects');
+			# Grab all public post types
+			$postTypes = get_post_types(['public' => true], 'objects');
 
 			foreach ($postTypes as $postType) {
-				# Ignore post-types with no archives
-				if (!(isset($postType->has_archive) and $postType->has_archive === false)) {
-					add_archive_meta_page($postType->name);
+				# Ignore post-types with no archives (built-in post post type has_archive = false but still has archives)
+				if ($postType->name === 'post' or !(isset($postType->has_archive) and $postType->has_archive === false)) {
+					add_archive_settings_page($postType->name);
 				}
 			}
 		}, 99);
