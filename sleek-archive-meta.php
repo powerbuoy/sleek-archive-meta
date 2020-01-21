@@ -116,7 +116,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	$image = false;
 
 	# Blog pages (category, date, tag etc)
-	if ((is_home() or is_category() or is_tag() or is_year() or is_month() or is_day()) and get_option('page_for_posts')) {
+	if ((is_home() or is_category() or is_tag() or is_date()) and get_option('page_for_posts')) {
 		if (has_post_thumbnail(get_option('page_for_posts'))) {
 			if ($urlOnly) {
 				$image = get_the_post_thumbnail_url(get_option('page_for_posts'), $size);
