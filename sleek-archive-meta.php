@@ -182,7 +182,7 @@ function add_archive_settings_page ($name) {
 
 	# Add some standard fields (title, description, image)
 	$groupKey = $name . '_archive_settings';
-	$fields = \Sleek\Acf\generate_keys([
+	$fields = \Sleek\Acf\generate_keys(apply_filters('sleek_archive_meta_fields', [
 		[
 			'label' => __('Title', 'sleek'),
 			'name' => 'title',
@@ -199,7 +199,7 @@ function add_archive_settings_page ($name) {
 			'name' => 'description',
 			'type' => 'wysiwyg'
 		]
-	], $groupKey);
+	], $name), $groupKey);
 
 	acf_add_local_field_group([
 		'key' => $groupKey,
