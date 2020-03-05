@@ -167,6 +167,21 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	return $image;
 }
 
+###############################
+# Add archive image as OG image
+add_filter('wpseo_opengraph_image', __NAMESPACE__ . '\\add_archive_og_image');
+add_filter('wpseo_twitter_image', __NAMESPACE__ . '\\add_archive_og_image');
+
+function add_archive_og_image ($image) {
+	$archiveImage = get_the_archive_image_url('large');
+
+	if ($archiveImage) {
+		return $archiveImage;
+	}
+
+	return $image;
+}
+
 ###########################################
 # Add {postType}_archive_settings options pages
 # with title, description and image fields
