@@ -8,7 +8,7 @@ add_filter('get_the_archive_title', function ($title) {
 	global $post;
 
 	# Blog page should show blog page's the_title()
-	if (is_home() and function_exists('get_field') and $customTitle = get_field('title', 'post_archive_settings')) {
+	if (is_home() and function_exists('get_field') and $customTitle = get_field('title', 'post_settings')) {
 		$title = $customTitle;
 	}
 
@@ -32,7 +32,7 @@ add_filter('get_the_archive_title', function ($title) {
 	}
 
 	# CPT archive should show custom title if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = get_field('title', $wp_query->query['post_type'] . '_archive_settings')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customTitle = get_field('title', $wp_query->query['post_type'] . '_settings')) {
 		$title = $customTitle;
 	}
 
@@ -51,7 +51,7 @@ add_filter('get_the_archive_description', function ($description) {
 	global $post;
 
 	# Blog page should show blog page's the_content()
-	if (is_home() and function_exists('get_field') and $customDescription = get_field('description', 'post_archive_settings')) {
+	if (is_home() and function_exists('get_field') and $customDescription = get_field('description', 'post_settings')) {
 		$description = $customDescription;
 	}
 
@@ -68,11 +68,11 @@ add_filter('get_the_archive_description', function ($description) {
 				$resTo = ($resFrom + $numPerPage) - 1;
 				$resTo = $resTo > $total ? $total : $resTo;
 
-				$description = '<p>' . sprintf(__('Displaying results %d through %d', 'sleek'), $resFrom, $resTo) . '</p>';
+				$description = '<p>' . sprintf(__('Displaying results %d through %d.', 'sleek'), $resFrom, $resTo) . '</p>';
 			}
 			# An empty search
 			else {
-				$description = '<p>' . __("You didn't search for anything in particular so I'm showing you everything", 'sleek') . '</p>';
+				$description = '<p>' . __("You didn't search for anything in particular so I'm showing you everything.", 'sleek') . '</p>';
 			}
 		}
 		# No search results
@@ -82,7 +82,7 @@ add_filter('get_the_archive_description', function ($description) {
 	}
 
 	# CPT archive should show custom description if set
-	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_archive_settings')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_settings')) {
 		$description = $customDescription;
 	}
 
@@ -116,7 +116,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	$image = false;
 
 	# Blog pages (category, date, tag etc)
-	if ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_archive_settings')) {
+	if ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -126,7 +126,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	}
 
 	# CPT archive
-	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_archive_settings')) {
+	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -136,7 +136,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	}
 
 	# Custom taxonomy
-	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_archive_settings')) {
+	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
@@ -181,69 +181,3 @@ function add_archive_og_image ($image) {
 
 	return $image;
 }
-
-###########################################
-# Add {postType}_archive_settings options pages
-# with title, description and image fields
-function add_archive_settings_page ($name) {
-	# Create the options page
-	acf_add_options_page([
-		'page_title' => __('Archive Settings', 'sleek'),
-		'menu_slug' => $name . '_archive_settings',
-		'parent_slug' => $name === 'post' ? 'edit.php' : 'edit.php?post_type=' . $name,
-		'icon_url' => 'dashicons-welcome-write-blog',
-		'post_id' => $name . '_archive_settings'
-	]);
-
-	# Add some standard fields (title, description, image)
-	$groupKey = $name . '_archive_settings';
-	$fields = \Sleek\Acf\generate_keys(apply_filters('sleek_archive_meta_fields', [
-		[
-			'label' => __('Title', 'sleek'),
-			'name' => 'title',
-			'type' => 'text'
-		],
-		[
-			'label' => __('Image', 'sleek'),
-			'name' => 'image',
-			'type' => 'image',
-			'return_format' => 'id'
-		],
-		[
-			'label' => __('Description', 'sleek'),
-			'name' => 'description',
-			'type' => 'wysiwyg'
-		]
-	], $name), $groupKey);
-
-	acf_add_local_field_group([
-		'key' => $groupKey,
-		'title' => __('Archive Settings', 'sleek'),
-		'fields' => $fields,
-		'location' => [[[
-			'param' => 'options_page',
-			'operator' => '==',
-			'value' => $name . '_archive_settings'
-		]]]
-	]);
-}
-
-add_action('after_setup_theme', function () {
-	if (get_theme_support('sleek-archive-meta')) {
-		add_action('init', function () {
-			if (!function_exists('acf_add_options_page')) {
-				return;
-			}
-
-			# Grab all public post types
-			$postTypes = get_post_types(['public' => true], 'objects');
-
-			foreach ($postTypes as $postType) {
-				# Ignore post-types with no archives (built-in post post type has_archive = false but still has archives)
-				if ($postType->name === 'post' or !(isset($postType->has_archive) and $postType->has_archive === false)) {
-					add_archive_settings_page($postType->name);
-				}
-			}
-		}, 99);
-	}
-});
