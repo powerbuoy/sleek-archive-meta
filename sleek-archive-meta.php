@@ -115,8 +115,18 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 
 	$image = false;
 
+	# Category or custom taxonomies
+	if ((is_tag() or is_category() or is_tax()) and function_exists('get_field') and $imageId = get_field('image', get_queried_object())) {
+		if ($urlOnly) {
+			$image = wp_get_attachment_image_src($imageId, $size)[0];
+		}
+		else {
+			$image = wp_get_attachment_image($imageId, $size);
+		}
+	}
+
 	# Blog pages (category, date, tag etc)
-	if ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_settings')) {
+	elseif ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_settings')) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
