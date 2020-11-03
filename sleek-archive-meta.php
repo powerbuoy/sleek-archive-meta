@@ -50,7 +50,7 @@ add_filter('get_the_archive_description', function ($description) {
 	global $wp_query;
 	global $post;
 
-	# Blog page should show blog page's the_content()
+	# Blog page should show blog settings description field
 	if (is_home() and function_exists('get_field') and $customDescription = get_field('description', 'post_settings')) {
 		$description = $customDescription;
 	}
