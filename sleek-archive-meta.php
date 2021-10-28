@@ -7,7 +7,7 @@ add_filter('get_the_archive_title', function ($title) {
 	global $wp_query;
 	global $post;
 
-	# Blog page should show blog page's the_title()
+	# Blog page should show blog settings title field
 	if (is_home() and function_exists('get_field') and $customTitle = get_field('title', 'post_settings')) {
 		$title = $customTitle;
 	}
@@ -110,71 +110,78 @@ function get_the_archive_image_url ($size = 'large') {
 
 function get_the_archive_image ($size = 'large', $urlOnly = false) {
 	global $_wp_additional_image_sizes;
-	global $wp_query;
-	global $post;
 
+	$imageId = get_the_archive_image_id();
 	$image = false;
 
-	# Category or custom taxonomies
-	if ((is_tag() or is_category() or is_tax()) and function_exists('get_field') and $imageId = get_field('image', get_queried_object())) {
+	# Special image
+	if (is_array($imageId)) {
+		if ($imageId['type'] === 'user') {
+			if (isset($_wp_additional_image_sizes[$size])) {
+				$size = $_wp_additional_image_sizes[$size]['width'];
+			}
+			else {
+				$size = 640;
+			}
+
+			if ($urlOnly) {
+				$image = get_avatar_url($imageId['id'], ['size' => $size]);
+			}
+			else {
+				$image = get_avatar($imageId['id'], ['size' => $size]);
+			}
+		}
+	}
+	# Normal attachment image
+	else {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
 		else {
 			$image = wp_get_attachment_image($imageId, $size);
 		}
+	}
+
+	return $image;
+}
+
+function get_the_archive_image_id () {
+	global $wp_query;
+	global $post;
+
+	$id = false;
+
+	# Category or custom taxonomies
+	if ((is_tag() or is_category() or is_tax()) and function_exists('get_field') and $imageId = get_field('image', get_queried_object())) {
+		$id = $imageId;
 	}
 
 	# Blog pages (category, date, tag etc)
 	elseif ((is_home() or is_category() or is_tag() or is_date()) and function_exists('get_field') and $imageId = get_field('image', 'post_settings')) {
-		if ($urlOnly) {
-			$image = wp_get_attachment_image_src($imageId, $size)[0];
-		}
-		else {
-			$image = wp_get_attachment_image($imageId, $size);
-		}
+		$id = $imageId;
 	}
 
 	# CPT archive
 	elseif (is_post_type_archive() and function_exists('get_field') and $imageId = get_field('image', $wp_query->query['post_type'] . '_settings')) {
-		if ($urlOnly) {
-			$image = wp_get_attachment_image_src($imageId, $size)[0];
-		}
-		else {
-			$image = wp_get_attachment_image($imageId, $size);
-		}
+		$id = $imageId;
 	}
 
 	# Custom taxonomy
 	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_settings')) {
-		if ($urlOnly) {
-			$image = wp_get_attachment_image_src($imageId, $size)[0];
-		}
-		else {
-			$image = wp_get_attachment_image($imageId, $size);
-		}
+		$id = $imageId;
 	}
 
 	# Author
 	elseif (is_author()) {
 		$user = get_queried_object();
 
-		if (isset($_wp_additional_image_sizes[$size])) {
-			$size = $_wp_additional_image_sizes[$size]['width'];
-		}
-		else {
-			$size = 640;
-		}
-
-		if ($urlOnly) {
-			$image = get_avatar_url($user->ID, ['size' => $size]);
-		}
-		else {
-			$image = get_avatar($user->ID, ['size' => $size]);
-		}
+		$id = [
+			'id' => $user->ID,
+			'type' => 'user'
+		];
 	}
 
-	return $image;
+	return $id;
 }
 
 ###############################
