@@ -133,7 +133,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 		}
 	}
 	# Normal attachment image
-	else {
+	elseif ($imageId) {
 		if ($urlOnly) {
 			$image = wp_get_attachment_image_src($imageId, $size)[0];
 		}
