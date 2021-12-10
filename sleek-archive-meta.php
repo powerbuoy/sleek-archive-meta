@@ -18,15 +18,18 @@ add_filter('get_the_archive_title', function ($title) {
 		if (have_posts()) {
 			# Non-empty search
 			if (strlen(trim(get_search_query())) > 0) {
-				$title = sprintf(__('Search results (%s) for: <strong>"%s"</strong>', 'sleek'), $wp_query->found_posts, get_search_query());
+				# Translators: This is the search results description when there are more than zero search results
+				$title = sprintf(__('Search results (%s) for: %s', 'sleek'), $wp_query->found_posts, '<strong>"' . get_search_query() . '"</strong>');
 			}
 			# An empty search
 			else {
+				# Translators: This is the search results description when the user didn't enter a search term
 				$title = sprintf(__('Empty search', 'sleek'), $wp_query->found_posts, get_search_query());
 			}
 		}
 		# No search results
 		else {
+			# Translators: This is the search results description when there are zero search results
 			$title = sprintf(__('No search results for: <strong>"%s"</strong>', 'sleek'), get_search_query());
 		}
 	}
