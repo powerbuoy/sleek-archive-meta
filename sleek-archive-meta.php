@@ -39,6 +39,11 @@ add_filter('get_the_archive_title', function ($title) {
 		$title = $customTitle;
 	}
 
+	# Tax archive
+	elseif (is_tax() and function_exists('get_field') and $customTitle = get_field('title', get_queried_object())) {
+		$title = $customTitle;
+	}
+
 	# Default (remove PREFIX:)
 	else {
 		$title = preg_replace('/^(.*?): /', '', $title);
@@ -86,6 +91,11 @@ add_filter('get_the_archive_description', function ($description) {
 
 	# CPT archive should show custom description if set
 	elseif (is_post_type_archive() and function_exists('get_field') and $customDescription = get_field('description', $wp_query->query['post_type'] . '_settings')) {
+		$description = $customDescription;
+	}
+
+	# Tax archive should show custom description if set
+	elseif (is_tax() and function_exists('get_field') and $customDescription = get_field('description', get_queried_object())) {
 		$description = $customDescription;
 	}
 
@@ -169,7 +179,7 @@ function get_the_archive_image_id () {
 		$id = $imageId;
 	}
 
-	# Custom taxonomy
+	# Custom taxonomy - fallback to settings page
 	elseif (is_tax() and function_exists('get_field') and $imageId = get_field('image', \Sleek\Utils\get_current_post_type() . '_settings')) {
 		$id = $imageId;
 	}
