@@ -141,7 +141,7 @@ function get_the_archive_image ($size = 'large', $urlOnly = false) {
 				$image = get_avatar_url($imageId['id'], ['size' => $size]);
 			}
 			else {
-				$image = get_avatar($imageId['id'], ['size' => $size]);
+				$image = get_avatar($imageId['id'], $size);
 			}
 		}
 	}
